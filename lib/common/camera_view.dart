@@ -20,7 +20,6 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   File? _image;
-  String? _path;
   ImagePicker? _imagePicker;
 
   @override
@@ -57,32 +56,29 @@ class _CameraViewState extends State<CameraView> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: ElevatedButton(
-            child: Text('From Gallery'),
-            onPressed: () => _getImage(ImageSource.gallery),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(
+                Theme.of(context).colorScheme.secondary,
+              ),
+            ),
             child: Text('Take a picture'),
-            onPressed: () => _getImage(ImageSource.camera),
+            onPressed: () => _getImage(),
           ),
         ),
-        // if (_image != null)
-        //   Padding(
-        //     padding: const EdgeInsets.all(16.0),
-        //     child: Text('${_path == null ? '' : 'Image path: $_path'}'),
-        //   ),
       ],
     );
   }
 
-  Future _getImage(ImageSource source) async {
+  Future _getImage() async {
     setState(() {
       _image = null;
-      _path = null;
     });
-    final pickedFile = await _imagePicker?.pickImage(source: source);
+    final pickedFile = await _imagePicker?.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 400,
+      maxHeight: 400,
+      // imageQuality: 50,
+    );
     if (pickedFile != null) {
       _setPickedFile(pickedFile);
     }
@@ -97,7 +93,6 @@ class _CameraViewState extends State<CameraView> {
     setState(() {
       _image = File(path);
     });
-    _path = path;
 
     Uint8List imageBytes = _image!.readAsBytesSync();
     widget.onImage(imageBytes);
