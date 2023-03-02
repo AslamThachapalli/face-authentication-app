@@ -5,7 +5,9 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:face_auth/authenticate_face/token_details_view.dart';
-import 'package:face_auth/common/camera_view.dart';
+import 'package:face_auth/common/views/camera_view.dart';
+import 'package:face_auth/common/views/custom_button.dart';
+import 'package:face_auth/constants/theme.dart';
 import 'package:face_auth/model/date_model.dart';
 import 'package:face_auth/model/user_model.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +28,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
   String _similarity = "";
   bool _canAuthenticate = false;
   final _formKey = GlobalKey<FormFieldState>();
-  TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   List<UserModel> users = <UserModel>[];
   bool userExists = false;
   UserModel? loggingUser;
@@ -44,107 +46,176 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          IgnorePointer(
-            ignoring: isMatching,
-            child: Column(
-              children: [
-                Flexible(
-                  flex: 7,
-                  child: CameraView(
-                    title: "Authenticate Face",
-                    onImage: (image) {
-                      _setImage(image);
-                    },
-                  ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: appBarColor,
+        title: Text("Authenticate Face"),
+        elevation: 0,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constrains) => Stack(
+          children: [
+            Container(
+              width: constrains.maxWidth,
+              height: constrains.maxHeight,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    scaffoldTopGradientClr,
+                    scaffoldBottomGradientClr,
+                  ],
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  child: TextFormField(
-                    key: _formKey,
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      hintText: "Name",
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return "Enter Name";
-                      } else {
-                        return null;
-                      }
-                    },
-                  ),
-                ),
-                if (_canAuthenticate)
-                  SizedBox(
-                    width: 250,
-                    child: TextButton(
-                      style: ButtonStyle(
-                        foregroundColor:
-                            MaterialStateProperty.all<Color>(Colors.blue),
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.black12),
-                      ),
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          FocusScope.of(context).unfocus();
-                          FirebaseFirestore.instance
-                              .collection("users")
-                              .where(
-                                "name",
-                                isEqualTo:
-                                    _nameController.text.trim().toUpperCase(),
-                              )
-                              .get()
-                              .catchError((e) {
-                            log("Getting User Error: $e");
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    "Something went wrong. Please try again."),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: Theme.of(context).errorColor,
-                              ),
-                            );
-                          }).then((snap) {
-                            if (snap.docs.isNotEmpty) {
-                              setState(() {
-                                for (var doc in snap.docs) {
-                                  users.add(
-                                    UserModel.fromJson(doc.data()),
-                                  );
-                                }
-                              });
-
-                              _matchFaces();
-                            } else {
-                              _showDialog(
-                                title: "User Not Found",
-                                description:
-                                    "Make sure user is registered. If already registered enter registered name.",
-                              );
-                            }
-                          });
-                        }
-                      },
-                      child: Text("REDEEM"),
-                    ),
-                  ),
-                SizedBox(height: 30),
-              ],
-            ),
-          ),
-          if (isMatching)
-            Align(
-              alignment: Alignment.center,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
-                child: CircularProgressIndicator(),
               ),
             ),
-        ],
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.82,
+                      width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      decoration: BoxDecoration(
+                        color: Color(0xff2E2E2E),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            CameraView(
+                              onImage: (image) {
+                                _setImage(image);
+                              },
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 15),
+                              child: TextFormField(
+                                key: _formKey,
+                                controller: _nameController,
+                                style: const TextStyle(
+                                  color: primaryWhite,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 0.6,
+                                ),
+                                cursorColor: Color(0xffAAAAAA),
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 20,
+                                  ),
+                                  filled: true,
+                                  fillColor: Color(0xff484848),
+                                  hintText: "Name",
+                                  hintStyle: TextStyle(
+                                    color: primaryWhite,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                    borderSide: BorderSide(
+                                      width: 2,
+                                      color: Color(0xffAAAAAA),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                    borderSide: BorderSide(
+                                      width: 2,
+                                      color: Color(0xffAAAAAA),
+                                    ),
+                                  ),
+                                ),
+                                validator: (val) {
+                                  if (val == null || val.trim().isEmpty) {
+                                    return "Enter Name";
+                                  } else {
+                                    return null;
+                                  }
+                                },
+                              ),
+                            ),
+                            if (_canAuthenticate)
+                              CustomButton(
+                                text: "Redeem Token",
+                                arrowColor: primaryBlack,
+                                onTap: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    FocusScope.of(context).unfocus();
+
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (context) => const Center(
+                                        child: CircularProgressIndicator(
+                                          color: accentColor,
+                                        ),
+                                      ),
+                                    );
+
+                                    FirebaseFirestore.instance
+                                        .collection("users")
+                                        .where(
+                                          "name",
+                                          isEqualTo: _nameController.text
+                                              .trim()
+                                              .toUpperCase(),
+                                        )
+                                        .get()
+                                        .catchError((e) {
+                                      log("Getting User Error: $e");
+                                      Navigator.of(context).pop();
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              "Something went wrong. Please try again."),
+                                          behavior: SnackBarBehavior.floating,
+                                          backgroundColor:
+                                              Theme.of(context).errorColor,
+                                        ),
+                                      );
+                                    }).then((snap) {
+                                      if (snap.docs.isNotEmpty) {
+                                        setState(() {
+                                          for (var doc in snap.docs) {
+                                            users.add(
+                                              UserModel.fromJson(doc.data()),
+                                            );
+                                          }
+                                        });
+
+                                        _matchFaces();
+                                      } else {
+                                        _showDialog(
+                                          title: "User Not Found",
+                                          description:
+                                              "Make sure user is registered. If already registered enter registered name.",
+                                        );
+                                      }
+                                    });
+                                  }
+                                },
+                              ),
+                            SizedBox(height: 30),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -159,10 +230,6 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
   }
 
   _matchFaces() async {
-    setState(() {
-      isMatching = true;
-    });
-
     bool faceMatched = false;
     for (UserModel user in users) {
       image1.bitmap = user.image;
@@ -193,17 +260,11 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
         }
       });
       if (faceMatched) {
-        setState(() {
-          isMatching = false;
-        });
         _redeemToken();
         break;
       }
     }
     if (!faceMatched) {
-      setState(() {
-        isMatching = false;
-      });
       _showDialog(
         title: "Redeem Failed",
         description: "Face doesn't match. Please try again.",
@@ -247,6 +308,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
             )
             .catchError((e) {
           log("Error updating redeemed date: $e");
+          Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text("Something went wrong. Please try again."),
@@ -282,11 +344,13 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                   );
             });
 
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => TokenDetailsView(user: loggingUser!),
-              ),
-            );
+            Navigator.of(context)
+              ..pop()
+              ..push(
+                MaterialPageRoute(
+                  builder: (context) => TokenDetailsView(user: loggingUser!),
+                ),
+              );
           },
         );
       } else {
@@ -307,6 +371,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
     required String title,
     required String description,
   }) {
+    Navigator.of(context).pop();
     showDialog(
         context: context,
         builder: (context) {
@@ -318,7 +383,12 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text("Ok"),
+                child: const Text(
+                  "Ok",
+                  style: TextStyle(
+                    color: accentColor,
+                  ),
+                ),
               )
             ],
           );
