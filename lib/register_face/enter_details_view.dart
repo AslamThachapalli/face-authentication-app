@@ -9,9 +9,11 @@ import 'package:uuid/uuid.dart';
 
 class EnterDetailsView extends StatefulWidget {
   final String image;
+  final FaceFeatures faceFeatures;
   const EnterDetailsView({
     Key? key,
     required this.image,
+    required this.faceFeatures,
   }) : super(key: key);
 
   @override
@@ -34,7 +36,7 @@ class _EnterDetailsViewState extends State<EnterDetailsView> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: appBarColor,
-        title: Text("Add Details"),
+        title: const Text("Add Details"),
         elevation: 0,
       ),
       body: Container(
@@ -107,10 +109,11 @@ class _EnterDetailsViewState extends State<EnterDetailsView> {
                           image: widget.image,
                           organizationId: _organizationIdController.text,
                           designation: _designationController.text,
-                          createdAt: DateTime.now().millisecondsSinceEpoch,
+                          registeredOn: DateTime.now().millisecondsSinceEpoch,
                           tokensLeft:
                               int.parse(_noOfTokensController.text.trim()),
                           lastRedeemedOn: null,
+                          faceFeatures: widget.faceFeatures,
                         );
 
                         FirebaseFirestore.instance
@@ -138,6 +141,7 @@ class _EnterDetailsViewState extends State<EnterDetailsView> {
                           );
                           Future.delayed(Duration(seconds: 1), () {
                             Navigator.of(context)
+                              ..pop()
                               ..pop()
                               ..pop();
                           });

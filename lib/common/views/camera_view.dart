@@ -3,15 +3,16 @@ import 'dart:typed_data';
 
 import 'package:face_auth/constants/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CameraView extends StatefulWidget {
-  const CameraView({
-    Key? key,
-    required this.onImage,
-  }) : super(key: key);
+  const CameraView(
+      {Key? key, required this.onImage, required this.onInputImage})
+      : super(key: key);
 
-  final Function(Uint8List inputImage) onImage;
+  final Function(Uint8List image) onImage;
+  final Function(InputImage inputImage) onInputImage;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -115,5 +116,8 @@ class _CameraViewState extends State<CameraView> {
 
     Uint8List imageBytes = _image!.readAsBytesSync();
     widget.onImage(imageBytes);
+
+    InputImage inputImage = InputImage.fromFilePath(path);
+    widget.onInputImage(inputImage);
   }
 }
