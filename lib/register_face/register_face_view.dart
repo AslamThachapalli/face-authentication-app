@@ -60,12 +60,14 @@ class _RegisterFaceViewState extends State<RegisterFaceView> {
             Container(
               height: 0.82.sh,
               width: double.infinity,
-              padding: EdgeInsets.fromLTRB(20, 20, 20, 32),
+              // width 20 => 0.05.sw
+              // height 20 => 0.025.sh
+              padding: EdgeInsets.fromLTRB(0.05.sw, 0.025.sh, 0.05.sw, 0.04.sh),
               decoration: BoxDecoration(
-                color: Color(0xff2E2E2E),
+                color: overlayContainerClr,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+                  topLeft: Radius.circular(0.03.sh),
+                  topRight: Radius.circular(0.03.sh),
                 ),
               ),
               child: Column(
@@ -93,7 +95,7 @@ class _RegisterFaceViewState extends State<RegisterFaceView> {
                       if (mounted) Navigator.of(context).pop();
                     },
                   ),
-                  Spacer(),
+                  const Spacer(),
                   if (_image != null)
                     CustomButton(
                       text: "Start Registering",

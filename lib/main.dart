@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(accentColor: accentColor),
         inputDecorationTheme: InputDecorationTheme(
-          contentPadding: EdgeInsets.all(20),
+          contentPadding: const EdgeInsets.all(20),
           filled: true,
           fillColor: primaryWhite,
           hintStyle: TextStyle(
@@ -56,11 +56,10 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ScreenSizeUtil.context = context;
-    log("ScreenHeight: " + ScreenSizeUtil.screenHeight.toString());
-    log("ScreenWidth: " + ScreenSizeUtil.screenWidth.toString());
+    initializeUtilContexts(context);
 
-    CustomSnackBar.context = context;
+    log("ScreenHeight: ${ScreenSizeUtil.screenHeight}");
+    log("ScreenWidth: ${ScreenSizeUtil.screenWidth}");
 
     return Scaffold(
       body: Container(
@@ -77,11 +76,11 @@ class Home extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               "Face Authentication",
               style: TextStyle(
                 color: textColor,
-                fontSize: 26,
+                fontSize: 0.033.sh,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -111,5 +110,10 @@ class Home extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void initializeUtilContexts(BuildContext context) {
+    ScreenSizeUtil.context = context;
+    CustomSnackBar.context = context;
   }
 }

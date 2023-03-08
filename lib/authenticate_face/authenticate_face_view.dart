@@ -5,17 +5,16 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:face_auth/authenticate_face/scanning_animation/animated_view.dart';
-import 'package:face_auth/authenticate_face/token_details_view.dart';
+import 'package:face_auth/authenticate_face/user_details_view.dart';
 import 'package:face_auth/common/utils/custom_snackbar.dart';
 import 'package:face_auth/common/utils/extensions/size_extension.dart';
 import 'package:face_auth/common/utils/extract_face_feature.dart';
 import 'package:face_auth/common/views/camera_view.dart';
 import 'package:face_auth/common/views/custom_button.dart';
 import 'package:face_auth/constants/theme.dart';
-import 'package:face_auth/model/date_model.dart';
 import 'package:face_auth/model/user_model.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_face_api/face_api.dart' as Regula;
+import 'package:flutter_face_api/face_api.dart' as regula;
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
@@ -35,25 +34,17 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
     ),
   );
   FaceFeatures? _faceFeatures;
-  var image1 = Regula.MatchFacesImage();
-  var image2 = Regula.MatchFacesImage();
+  var image1 = regula.MatchFacesImage();
+  var image2 = regula.MatchFacesImage();
 
+  final TextEditingController _nameController = TextEditingController();
   String _similarity = "";
   bool _canAuthenticate = false;
-  final TextEditingController _orgIdCtrl = TextEditingController();
   List<dynamic> users = [];
   bool userExists = false;
   UserModel? loggingUser;
   bool isMatching = false;
   int trialNumber = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    _initPlatformState();
-  }
-
-  Future<void> _initPlatformState() async {}
 
   @override
   void dispose() {
@@ -78,7 +69,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: appBarColor,
-        title: Text("Authenticate Face"),
+        title: const Text("Authenticate Face"),
         elevation: 0,
       ),
       body: LayoutBuilder(
@@ -105,14 +96,15 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Container(
-                      height: MediaQuery.of(context).size.height * 0.82,
+                      height: 0.82.sh,
                       width: double.infinity,
-                      padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      padding:
+                          EdgeInsets.fromLTRB(0.05.sw, 0.025.sh, 0.05.sw, 0),
                       decoration: BoxDecoration(
-                        color: Color(0xff2E2E2E),
+                        color: overlayContainerClr,
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
+                          topLeft: Radius.circular(0.03.sh),
+                          topRight: Radius.circular(0.03.sh),
                         ),
                       ),
                       child: Column(
@@ -124,21 +116,10 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                                   _setImage(image);
                                 },
                                 onInputImage: (inputImage) async {
-                                  // showDialog(
-                                  //   context: context,
-                                  //   barrierDismissible: false,
-                                  //   builder: (context) => const Center(
-                                  //     child: CircularProgressIndicator(
-                                  //       color: accentColor,
-                                  //     ),
-                                  //   ),
-                                  // );
                                   setState(() => isMatching = true);
                                   _faceFeatures = await extractFaceFeatures(
                                       inputImage, _faceDetector);
                                   setState(() => isMatching = false);
-
-                                  // if (mounted) Navigator.of(context).pop();
                                 },
                               ),
                               if (isMatching)
@@ -146,33 +127,23 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                                   alignment: Alignment.center,
                                   child: Padding(
                                     padding: EdgeInsets.only(top: 0.064.sh),
-                                    child: AnimatedView(),
+                                    child: const AnimatedView(),
                                   ),
                                 ),
                             ],
                           ),
-                          Spacer(),
+                          const Spacer(),
                           if (_canAuthenticate)
                             CustomButton(
                               text: "Redeem Token",
                               arrowColor: primaryBlack,
                               onTap: () {
-                                // showDialog(
-                                //   context: context,
-                                //   barrierDismissible: false,
-                                //   builder: (context) => const Center(
-                                //     child: CircularProgressIndicator(
-                                //       color: accentColor,
-                                //     ),
-                                //   ),
-                                // );
-
                                 setState(() => isMatching = true);
                                 _playScanningAudio;
                                 _fetchUsersAndMatchFace();
                               },
                             ),
-                          SizedBox(height: 30),
+                          SizedBox(height: 0.038.sh),
                         ],
                       ),
                     ),
@@ -188,7 +159,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
 
   Future _setImage(Uint8List imageToAuthenticate) async {
     image2.bitmap = base64Encode(imageToAuthenticate);
-    image2.imageType = Regula.ImageType.PRINTED;
+    image2.imageType = regula.ImageType.PRINTED;
 
     setState(() {
       _canAuthenticate = true;
@@ -225,8 +196,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
 
     double ratio =
         (ratioEye + ratioEar + ratioCheek + ratioMouth + ratioNoseToMouth) / 5;
-    log("------Ratio--------");
-    log(ratio.toString());
+    log(ratio.toString(), name: "Ratio");
 
     return ratio;
   }
@@ -241,7 +211,6 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
   _fetchUsersAndMatchFace() {
     FirebaseFirestore.instance.collection("users").get().catchError((e) {
       log("Getting User Error: $e");
-      // Navigator.of(context).pop();
       setState(() => isMatching = false);
       _playFailedAudio;
       CustomSnackBar.errorSnackBar("Something went wrong. Please try again.");
@@ -252,12 +221,14 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
         for (var doc in snap.docs) {
           UserModel user = UserModel.fromJson(doc.data());
           double similarity = compareFaces(_faceFeatures!, user.faceFeatures!);
-          if (similarity >= 0.8 && similarity <= 2) {
+          if (similarity >= 0.8 && similarity <= 1.5) {
             users.add([user, similarity]);
           }
         }
         log(users.length.toString(), name: "Filtered Users");
         setState(() {
+          //Sorts the users based on the similarity.
+          //More similar face is put first.
           users.sort((a, b) => (((a.last as double) - 1).abs())
               .compareTo(((b.last as double) - 1).abs()));
         });
@@ -277,19 +248,19 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
     bool faceMatched = false;
     for (List user in users) {
       image1.bitmap = (user.first as UserModel).image;
-      image1.imageType = Regula.ImageType.PRINTED;
+      image1.imageType = regula.ImageType.PRINTED;
 
       //Face comparing logic.
-      var request = Regula.MatchFacesRequest();
+      var request = regula.MatchFacesRequest();
       request.images = [image1, image2];
-      dynamic value = await Regula.FaceSDK.matchFaces(jsonEncode(request));
+      dynamic value = await regula.FaceSDK.matchFaces(jsonEncode(request));
 
-      var response = Regula.MatchFacesResponse.fromJson(json.decode(value));
-      dynamic str = await Regula.FaceSDK.matchFacesSimilarityThresholdSplit(
+      var response = regula.MatchFacesResponse.fromJson(json.decode(value));
+      dynamic str = await regula.FaceSDK.matchFacesSimilarityThresholdSplit(
           jsonEncode(response!.results), 0.75);
 
       var split =
-          Regula.MatchFacesSimilarityThresholdSplit.fromJson(json.decode(str));
+          regula.MatchFacesSimilarityThresholdSplit.fromJson(json.decode(str));
       setState(() {
         _similarity = split!.matchedFaces.isNotEmpty
             ? (split.matchedFaces[0]!.similarity! * 100).toStringAsFixed(2)
@@ -304,7 +275,23 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
         }
       });
       if (faceMatched) {
-        _redeemToken();
+        _audioPlayer
+          ..stop()
+          ..setReleaseMode(ReleaseMode.release)
+          ..play(AssetSource("success.mp3"));
+
+        setState(() {
+          trialNumber = 1;
+          isMatching = false;
+        });
+
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => UserDetailsView(user: loggingUser!),
+            ),
+          );
+        }
         break;
       }
     }
@@ -316,7 +303,10 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
           description: "Face doesn't match. Please try again.",
         );
       } else if (trialNumber == 3) {
-        // if (mounted) Navigator.of(context).pop();
+        //After 2 trials if the face doesn't match automatically, the registered name prompt
+        //will be shown. After entering the name the face registered with the entered name will
+        //be fetched and will try to match it with the to be authenticated face.
+        //If the faces match, Viola!. Else it means the user is not registered yet.
         _audioPlayer.stop();
         setState(() {
           isMatching = false;
@@ -326,20 +316,20 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                title: Text("Enter OrganizationId"),
+                title: const Text("Enter Name"),
                 content: TextFormField(
-                  controller: _orgIdCtrl,
+                  controller: _nameController,
                   cursorColor: accentColor,
                   decoration: InputDecoration(
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         width: 2,
                         color: accentColor,
                       ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         width: 2,
                         color: accentColor,
                       ),
@@ -350,21 +340,13 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                 actions: [
                   TextButton(
                     onPressed: () {
-                      if (_orgIdCtrl.text.trim().isEmpty) {
+                      if (_nameController.text.trim().isEmpty) {
                         CustomSnackBar.errorSnackBar("Enter an Id to proceed");
                       } else {
                         Navigator.of(context).pop();
-                        // showDialog(
-                        //   context: context,
-                        //   builder: (context) => Center(
-                        //     child: CircularProgressIndicator(
-                        //       color: accentColor,
-                        //     ),
-                        //   ),
-                        // );
                         setState(() => isMatching = true);
                         _playScanningAudio;
-                        _fetchUserById(_orgIdCtrl.text.trim());
+                        _fetchUserByName(_nameController.text.trim());
                       }
                     },
                     child: const Text(
@@ -387,116 +369,13 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
     }
   }
 
-  _redeemToken() async {
-    int? tokenLastUsedOn;
-    if (loggingUser!.lastRedeemedOn != null) {
-      DateTime now = DateTime.now();
-      DateTime lastRedeemed = DateTime.fromMillisecondsSinceEpoch(
-        loggingUser!.lastRedeemedOn!,
-      );
-      tokenLastUsedOn =
-          DateTime(lastRedeemed.year, lastRedeemed.month, lastRedeemed.day)
-              .difference(
-                DateTime(now.year, now.month, now.day),
-              )
-              .inDays;
-    }
-
-    if (loggingUser!.lastRedeemedOn == null || tokenLastUsedOn! != 0) {
-      if (loggingUser!.tokensLeft! != 0) {
-        setState(() {
-          int tokens = loggingUser!.tokensLeft! - 1;
-          loggingUser!.tokensLeft = tokens;
-
-          int redeemedOn = DateTime.now().millisecondsSinceEpoch;
-          loggingUser!.lastRedeemedOn = redeemedOn;
-
-          int tokensUsed = loggingUser!.tokensUsed! + 1;
-          loggingUser!.tokensUsed = tokensUsed;
-        });
-        FirebaseFirestore.instance
-            .collection("users")
-            .doc(loggingUser!.id!)
-            .update(
-              loggingUser!.toJson(),
-            )
-            .catchError((e) {
-          log("Error updating redeemed date: $e");
-          // Navigator.of(context).pop();
-          setState(() => isMatching = false);
-          _playFailedAudio;
-          CustomSnackBar.errorSnackBar(
-              "Something went wrong. Please try again.");
-        }).whenComplete(
-          () {
-            DateTime now = DateTime.now();
-            int today =
-                DateTime(now.year, now.month, now.day).millisecondsSinceEpoch;
-            FirebaseFirestore.instance
-                .collection("date")
-                .doc(today.toString())
-                .get()
-                .then((snap) {
-              DateModel? date;
-              if (snap.exists) {
-                date = DateModel.fromJson(snap.data()!);
-                date.tokenUsersId!.add(loggingUser!.id!);
-              } else {
-                date = DateModel(
-                  date: today,
-                  tokenUsersId: [loggingUser!.id!],
-                );
-              }
-              FirebaseFirestore.instance
-                  .collection("date")
-                  .doc(today.toString())
-                  .set(
-                    date.toJson(),
-                  );
-            });
-
-            _audioPlayer
-              ..stop()
-              ..setReleaseMode(ReleaseMode.release)
-              ..play(AssetSource("success.mp3"));
-
-            setState(() {
-              trialNumber = 1;
-              isMatching = false;
-            });
-
-            Navigator.of(context) /*
-              ..pop()
-              .*/
-                .push(
-              MaterialPageRoute(
-                builder: (context) => TokenDetailsView(user: loggingUser!),
-              ),
-            );
-          },
-        );
-      } else {
-        _showFailureDialog(
-          title: "No Token Left",
-          description: "You have used all available tokens",
-        );
-      }
-    } else {
-      _showFailureDialog(
-        title: "Token Used",
-        description: "You have already redeemed today's token!",
-      );
-    }
-  }
-
-  _fetchUserById(String orgID) {
+  _fetchUserByName(String orgID) {
     FirebaseFirestore.instance
         .collection("users")
         .where("organizationId", isEqualTo: orgID)
         .get()
         .catchError((e) {
       log("Getting User Error: $e");
-      // Navigator.of(context).pop();
       setState(() => isMatching = false);
       _playFailedAudio;
       CustomSnackBar.errorSnackBar("Something went wrong. Please try again.");
@@ -525,29 +404,29 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
     required String title,
     required String description,
   }) {
-    // Navigator.of(context).pop();
     _playFailedAudio;
     setState(() => isMatching = false);
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(title),
-            content: Text(description),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  "Ok",
-                  style: TextStyle(
-                    color: accentColor,
-                  ),
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(description),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                "Ok",
+                style: TextStyle(
+                  color: accentColor,
                 ),
-              )
-            ],
-          );
-        });
+              ),
+            )
+          ],
+        );
+      },
+    );
   }
 }

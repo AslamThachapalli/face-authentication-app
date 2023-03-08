@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:face_auth/common/utils/custom_text_field.dart';
 import 'package:face_auth/common/views/custom_button.dart';
 import 'package:face_auth/common/utils/custom_snackbar.dart';
-import 'package:face_auth/common/utils/extensions/size_extension.dart';
 import 'package:face_auth/constants/theme.dart';
 import 'package:face_auth/model/password_model.dart';
 import 'package:face_auth/register_face/register_face_view.dart';
@@ -40,30 +40,11 @@ class EnterPasswordView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 0.055.sw, vertical: 0.02.sh),
-                  child: TextFormField(
-                    key: _formFieldKey,
-                    controller: _controller,
-                    cursorColor: primaryBlack.withOpacity(0.8),
-                    style: const TextStyle(
-                      color: primaryBlack,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.6,
-                    ),
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      hintText: "Password",
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return "Enter password to proceed";
-                      } else {
-                        return null;
-                      }
-                    },
-                  ),
+                CustomTextField(
+                  formFieldKey: _formFieldKey,
+                  controller: _controller,
+                  hintText: "Password",
+                  validatorText: "Enter password to proceed",
                 ),
                 CustomButton(
                   text: "Continue",

@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:face_auth/common/utils/extensions/size_extension.dart';
 import 'package:flutter/material.dart';
 
 import 'animated_circle.dart';
 
 class AnimatedView extends StatefulWidget {
+  const AnimatedView({super.key});
+
   @override
-  _AnimatedViewState createState() => _AnimatedViewState();
+  State<AnimatedView> createState() => _AnimatedViewState();
 }
 
 class _AnimatedViewState extends State<AnimatedView>
@@ -27,15 +30,15 @@ class _AnimatedViewState extends State<AnimatedView>
     sAngle = random.nextInt(360);
     mAngle = random.nextInt(360);
     lAngle = random.nextInt(360);
-    timer = Timer.periodic(Duration(seconds: 3), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       sAngle = random.nextInt(360);
       mAngle = random.nextInt(360);
       lAngle = random.nextInt(360);
     });
     animationController = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 1200));
+        vsync: this, duration: const Duration(milliseconds: 1200));
     opacity = Tween<double>(begin: 0.8, end: 0.0).animate(
-        new CurvedAnimation(parent: animationController, curve: Curves.easeIn));
+        CurvedAnimation(parent: animationController, curve: Curves.easeIn));
     animation = Tween<double>(begin: 0, end: 140).animate(CurvedAnimation(
         parent: animationController, curve: Curves.easeInOutQuad))
       ..addListener(() {
@@ -63,9 +66,10 @@ class _AnimatedViewState extends State<AnimatedView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Container(
-      height: 240,
-      width: 240,
+
+    return SizedBox(
+      height: 0.3.sh,
+      width: 0.66.sw,
       child: CustomPaint(
         painter: AnimatedCircle(
             value: animation.value,

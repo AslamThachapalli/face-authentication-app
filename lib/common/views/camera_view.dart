@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:face_auth/common/utils/extensions/size_extension.dart';
 import 'package:face_auth/constants/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -39,24 +40,24 @@ class _CameraViewState extends State<CameraView> {
             Icon(
               Icons.camera_alt_outlined,
               color: primaryWhite,
-              size: 30,
+              size: 0.038.sh,
             ),
           ],
         ),
-        SizedBox(height: 20),
+        SizedBox(height: 0.025.sh),
         _image != null
             ? CircleAvatar(
-                radius: 120,
-                backgroundColor: Color(0xffD9D9D9),
+                radius: 0.15.sh,
+                backgroundColor: const Color(0xffD9D9D9),
                 backgroundImage: FileImage(_image!),
               )
             : CircleAvatar(
-                radius: 120,
-                backgroundColor: Color(0xffD9D9D9),
+                radius: 0.15.sh,
+                backgroundColor: const Color(0xffD9D9D9),
                 child: Icon(
                   Icons.camera_alt,
-                  size: 72,
-                  color: Color(0xff2E2E2E),
+                  size: 0.09.sh,
+                  color: const Color(0xff2E2E2E),
                 ),
               ),
         GestureDetector(
@@ -64,8 +65,8 @@ class _CameraViewState extends State<CameraView> {
           child: Container(
             width: 60,
             height: 60,
-            margin: EdgeInsets.only(top: 44, bottom: 20),
-            decoration: BoxDecoration(
+            margin: const EdgeInsets.only(top: 44, bottom: 20),
+            decoration: const BoxDecoration(
               gradient: RadialGradient(
                 stops: [0.4, 0.65, 1],
                 colors: [

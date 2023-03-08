@@ -1,3 +1,4 @@
+import 'package:face_auth/common/utils/extensions/size_extension.dart';
 import 'package:face_auth/constants/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,7 @@ class CustomButton extends StatelessWidget {
     Key? key,
     required this.text,
     required this.onTap,
-    this.arrowColor = const Color(0xffFFFFFF),
+    this.arrowColor = buttonColor,
   }) : super(key: key);
 
   @override
@@ -18,29 +19,29 @@ class CustomButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
+        margin: EdgeInsets.symmetric(horizontal: 0.05.sw),
         decoration: BoxDecoration(
           color: buttonColor,
-          borderRadius: BorderRadius.circular(36),
+          borderRadius: BorderRadius.circular(0.046.sh),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(0.03.sw),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 12),
+                padding: EdgeInsets.only(left: 0.03.sw),
                 child: Text(
                   text,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: primaryBlack,
-                    fontSize: 20,
+                    fontSize: 0.025.sh,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
               CircleAvatar(
-                radius: 24,
+                radius: 0.03.sh,
                 backgroundColor: accentColor,
                 child: Icon(
                   Icons.double_arrow_sharp,

@@ -2,11 +2,6 @@ class UserModel {
   String? id;
   String? name;
   String? image;
-  String? organizationId;
-  String? designation;
-  int? tokensLeft;
-  int? tokensUsed;
-  int? lastRedeemedOn;
   FaceFeatures? faceFeatures;
   int? registeredOn;
 
@@ -14,11 +9,6 @@ class UserModel {
     this.id,
     this.name,
     this.image,
-    this.organizationId,
-    this.designation,
-    this.tokensLeft,
-    this.tokensUsed,
-    this.lastRedeemedOn,
     this.faceFeatures,
     this.registeredOn,
   });
@@ -28,11 +18,6 @@ class UserModel {
       id: json['id'],
       name: json['name'],
       image: json['image'],
-      organizationId: json['organizationId'],
-      designation: json['designation'],
-      tokensLeft: json['tokensLeft'],
-      tokensUsed: json['tokensUsed'] ?? 0,
-      lastRedeemedOn: json['lastRedeemedOn'],
       faceFeatures: FaceFeatures.fromJson(json["faceFeatures"]),
       registeredOn: json['registeredOn'],
     );
@@ -43,11 +28,6 @@ class UserModel {
       'id': id,
       'name': name,
       'image': image,
-      'organizationId': organizationId,
-      'designation': designation,
-      'tokensLeft': tokensLeft,
-      'tokensUsed': tokensUsed,
-      'lastRedeemedOn': lastRedeemedOn,
       'faceFeatures': faceFeatures?.toJson() ?? {},
       'registeredOn': registeredOn,
     };
@@ -88,8 +68,8 @@ class FaceFeatures {
         rightEar: Points.fromJson(json["rightEar"]),
         leftEar: Points.fromJson(json["leftEar"]),
         rightEye: Points.fromJson(json["rightEye"]),
-    noseBase: Points.fromJson(json["noseBase"]),
-    bottomMouth: Points.fromJson(json["bottomMouth"]),
+        noseBase: Points.fromJson(json["noseBase"]),
+        bottomMouth: Points.fromJson(json["bottomMouth"]),
       );
 
   Map<String, dynamic> toJson() => {

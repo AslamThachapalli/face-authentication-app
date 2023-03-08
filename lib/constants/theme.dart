@@ -8,3 +8,4 @@ const Color accentColor = Color(0xffF5973F);
 const Color primaryBlack = Color(0xff000000);
 const Color textColor = Color(0xffFFFFFF);
 const Color primaryWhite = Color(0xffFFFFFF);
+const Color overlayContainerClr = Color(0xff2E2E2E);
