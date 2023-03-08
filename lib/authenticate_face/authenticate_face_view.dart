@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' as math;
-import 'dart:typed_data';
-import 'dart:ui';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:face_auth/authenticate_face/scanning_animation/animated_view.dart';
 import 'package:face_auth/authenticate_face/token_details_view.dart';
+import 'package:face_auth/common/utils/custom_snackbar.dart';
+import 'package:face_auth/common/utils/extensions/size_extension.dart';
 import 'package:face_auth/common/utils/extract_face_feature.dart';
 import 'package:face_auth/common/views/camera_view.dart';
 import 'package:face_auth/common/views/custom_button.dart';
@@ -25,6 +27,7 @@ class AuthenticateFaceView extends StatefulWidget {
 }
 
 class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
       enableLandmarks: true,
@@ -37,17 +40,16 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
 
   String _similarity = "";
   bool _canAuthenticate = false;
-  // final _formKey = GlobalKey<FormFieldState>();
-  // final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _orgIdCtrl = TextEditingController();
   List<dynamic> users = [];
   bool userExists = false;
   UserModel? loggingUser;
   bool isMatching = false;
+  int trialNumber = 1;
 
   @override
   void initState() {
     super.initState();
-
     _initPlatformState();
   }
 
@@ -56,8 +58,18 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
   @override
   void dispose() {
     _faceDetector.close();
+    _audioPlayer.dispose();
     super.dispose();
   }
+
+  get _playScanningAudio => _audioPlayer
+    ..setReleaseMode(ReleaseMode.loop)
+    ..play(AssetSource("scan_beep.wav"));
+
+  get _playFailedAudio => _audioPlayer
+    ..stop()
+    ..setReleaseMode(ReleaseMode.release)
+    ..play(AssetSource("failed.mp3"));
 
   @override
   Widget build(BuildContext context) {
@@ -105,25 +117,39 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                       ),
                       child: Column(
                         children: [
-                          CameraView(
-                            onImage: (image) {
-                              _setImage(image);
-                            },
-                            onInputImage: (inputImage) async {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) => const Center(
-                                  child: CircularProgressIndicator(
-                                    color: accentColor,
+                          Stack(
+                            children: [
+                              CameraView(
+                                onImage: (image) {
+                                  _setImage(image);
+                                },
+                                onInputImage: (inputImage) async {
+                                  // showDialog(
+                                  //   context: context,
+                                  //   barrierDismissible: false,
+                                  //   builder: (context) => const Center(
+                                  //     child: CircularProgressIndicator(
+                                  //       color: accentColor,
+                                  //     ),
+                                  //   ),
+                                  // );
+                                  setState(() => isMatching = true);
+                                  _faceFeatures = await extractFaceFeatures(
+                                      inputImage, _faceDetector);
+                                  setState(() => isMatching = false);
+
+                                  // if (mounted) Navigator.of(context).pop();
+                                },
+                              ),
+                              if (isMatching)
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 0.064.sh),
+                                    child: AnimatedView(),
                                   ),
                                 ),
-                              );
-                              _faceFeatures = await extractFaceFeatures(
-                                  inputImage, _faceDetector);
-                              setState(() {});
-                              if (mounted) Navigator.of(context).pop();
-                            },
+                            ],
                           ),
                           Spacer(),
                           if (_canAuthenticate)
@@ -131,65 +157,19 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                               text: "Redeem Token",
                               arrowColor: primaryBlack,
                               onTap: () {
-                                showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) => const Center(
-                                    child: CircularProgressIndicator(
-                                      color: accentColor,
-                                    ),
-                                  ),
-                                );
+                                // showDialog(
+                                //   context: context,
+                                //   barrierDismissible: false,
+                                //   builder: (context) => const Center(
+                                //     child: CircularProgressIndicator(
+                                //       color: accentColor,
+                                //     ),
+                                //   ),
+                                // );
 
-                                FirebaseFirestore.instance
-                                    .collection("users")
-                                    .get()
-                                    .catchError((e) {
-                                  log("Getting User Error: $e");
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          "Something went wrong. Please try again."),
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor:
-                                          Theme.of(context).errorColor,
-                                    ),
-                                  );
-                                }).then((snap) {
-                                  if (snap.docs.isNotEmpty) {
-                                    users.clear();
-                                    log(snap.docs.length.toString(),
-                                        name: "Total Registered Users");
-                                    for (var doc in snap.docs) {
-                                      UserModel user =
-                                          UserModel.fromJson(doc.data());
-                                      double similarity = compareFaces(
-                                          _faceFeatures!, user.faceFeatures!);
-                                      if (similarity >= 0.8 &&
-                                          similarity <= 2) {
-                                        users.add([user, similarity]);
-                                      }
-                                    }
-                                    log(users.length.toString(),
-                                        name: "Filtered Users");
-                                    setState(() {
-                                      users.sort((a, b) =>
-                                          (((a.last as double) - 1).abs())
-                                              .compareTo(
-                                                  ((b.last as double) - 1)
-                                                      .abs()));
-                                    });
-
-                                    _matchFaces();
-                                  } else {
-                                    _showDialog(
-                                      title: "No Users Registered",
-                                      description:
-                                          "Make sure users are registered first before redeeming token.",
-                                    );
-                                  }
-                                });
+                                setState(() => isMatching = true);
+                                _playScanningAudio;
+                                _fetchUsersAndMatchFace();
                               },
                             ),
                           SizedBox(height: 30),
@@ -258,6 +238,41 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
     return sqr;
   }
 
+  _fetchUsersAndMatchFace() {
+    FirebaseFirestore.instance.collection("users").get().catchError((e) {
+      log("Getting User Error: $e");
+      // Navigator.of(context).pop();
+      setState(() => isMatching = false);
+      _playFailedAudio;
+      CustomSnackBar.errorSnackBar("Something went wrong. Please try again.");
+    }).then((snap) {
+      if (snap.docs.isNotEmpty) {
+        users.clear();
+        log(snap.docs.length.toString(), name: "Total Registered Users");
+        for (var doc in snap.docs) {
+          UserModel user = UserModel.fromJson(doc.data());
+          double similarity = compareFaces(_faceFeatures!, user.faceFeatures!);
+          if (similarity >= 0.8 && similarity <= 2) {
+            users.add([user, similarity]);
+          }
+        }
+        log(users.length.toString(), name: "Filtered Users");
+        setState(() {
+          users.sort((a, b) => (((a.last as double) - 1).abs())
+              .compareTo(((b.last as double) - 1).abs()));
+        });
+
+        _matchFaces();
+      } else {
+        _showFailureDialog(
+          title: "No Users Registered",
+          description:
+              "Make sure users are registered first before redeeming token.",
+        );
+      }
+    });
+  }
+
   _matchFaces() async {
     bool faceMatched = false;
     for (List user in users) {
@@ -294,14 +309,85 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
       }
     }
     if (!faceMatched) {
-      _showDialog(
-        title: "Redeem Failed",
-        description: "Face doesn't match. Please try again.",
-      );
+      if (trialNumber == 4) {
+        setState(() => trialNumber = 1);
+        _showFailureDialog(
+          title: "Redeem Failed",
+          description: "Face doesn't match. Please try again.",
+        );
+      } else if (trialNumber == 3) {
+        // if (mounted) Navigator.of(context).pop();
+        _audioPlayer.stop();
+        setState(() {
+          isMatching = false;
+          trialNumber++;
+        });
+        showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("Enter OrganizationId"),
+                content: TextFormField(
+                  controller: _orgIdCtrl,
+                  cursorColor: accentColor,
+                  decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: accentColor,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        width: 2,
+                        color: accentColor,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      if (_orgIdCtrl.text.trim().isEmpty) {
+                        CustomSnackBar.errorSnackBar("Enter an Id to proceed");
+                      } else {
+                        Navigator.of(context).pop();
+                        // showDialog(
+                        //   context: context,
+                        //   builder: (context) => Center(
+                        //     child: CircularProgressIndicator(
+                        //       color: accentColor,
+                        //     ),
+                        //   ),
+                        // );
+                        setState(() => isMatching = true);
+                        _playScanningAudio;
+                        _fetchUserById(_orgIdCtrl.text.trim());
+                      }
+                    },
+                    child: const Text(
+                      "Done",
+                      style: TextStyle(
+                        color: accentColor,
+                      ),
+                    ),
+                  )
+                ],
+              );
+            });
+      } else {
+        setState(() => trialNumber++);
+        _showFailureDialog(
+          title: "Redeem Failed",
+          description: "Face doesn't match. Please try again.",
+        );
+      }
     }
   }
 
-  _redeemToken() {
+  _redeemToken() async {
     int? tokenLastUsedOn;
     if (loggingUser!.lastRedeemedOn != null) {
       DateTime now = DateTime.now();
@@ -336,14 +422,11 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
             )
             .catchError((e) {
           log("Error updating redeemed date: $e");
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text("Something went wrong. Please try again."),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: Theme.of(context).errorColor,
-            ),
-          );
+          // Navigator.of(context).pop();
+          setState(() => isMatching = false);
+          _playFailedAudio;
+          CustomSnackBar.errorSnackBar(
+              "Something went wrong. Please try again.");
         }).whenComplete(
           () {
             DateTime now = DateTime.now();
@@ -372,34 +455,79 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                   );
             });
 
-            Navigator.of(context)
+            _audioPlayer
+              ..stop()
+              ..setReleaseMode(ReleaseMode.release)
+              ..play(AssetSource("success.mp3"));
+
+            setState(() {
+              trialNumber = 1;
+              isMatching = false;
+            });
+
+            Navigator.of(context) /*
               ..pop()
-              ..push(
-                MaterialPageRoute(
-                  builder: (context) => TokenDetailsView(user: loggingUser!),
-                ),
-              );
+              .*/
+                .push(
+              MaterialPageRoute(
+                builder: (context) => TokenDetailsView(user: loggingUser!),
+              ),
+            );
           },
         );
       } else {
-        _showDialog(
+        _showFailureDialog(
           title: "No Token Left",
           description: "You have used all available tokens",
         );
       }
     } else {
-      _showDialog(
+      _showFailureDialog(
         title: "Token Used",
         description: "You have already redeemed today's token!",
       );
     }
   }
 
-  _showDialog({
+  _fetchUserById(String orgID) {
+    FirebaseFirestore.instance
+        .collection("users")
+        .where("organizationId", isEqualTo: orgID)
+        .get()
+        .catchError((e) {
+      log("Getting User Error: $e");
+      // Navigator.of(context).pop();
+      setState(() => isMatching = false);
+      _playFailedAudio;
+      CustomSnackBar.errorSnackBar("Something went wrong. Please try again.");
+    }).then((snap) {
+      if (snap.docs.isNotEmpty) {
+        users.clear();
+
+        for (var doc in snap.docs) {
+          setState(() {
+            users.add([UserModel.fromJson(doc.data()), 1]);
+          });
+        }
+        _matchFaces();
+      } else {
+        setState(() => trialNumber = 1);
+        _showFailureDialog(
+          title: "User Not Found",
+          description:
+              "User is not registered yet. Register first to redeem tokens.",
+        );
+      }
+    });
+  }
+
+  _showFailureDialog({
     required String title,
     required String description,
   }) {
-    Navigator.of(context).pop();
+    // Navigator.of(context).pop();
+    _playFailedAudio;
+    setState(() => isMatching = false);
     showDialog(
         context: context,
         builder: (context) {

@@ -37,6 +37,7 @@ dependencies:
   cloud_firestore: ^4.4.0
   uuid: ^3.0.7
   google_mlkit_face_detection: ^0.5.0
+  audioplayers: ^3.0.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -66,9 +67,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/success.mp3
+    - assets/failed.mp3
+    - assets/scan_beep.wav
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

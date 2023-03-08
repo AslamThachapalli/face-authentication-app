@@ -107,8 +107,8 @@ class _EnterDetailsViewState extends State<EnterDetailsView> {
                           id: userId,
                           name: _nameController.text.trim().toUpperCase(),
                           image: widget.image,
-                          organizationId: _organizationIdController.text,
-                          designation: _designationController.text,
+                          organizationId: _organizationIdController.text.trim(),
+                          designation: _designationController.text.trim(),
                           registeredOn: DateTime.now().millisecondsSinceEpoch,
                           tokensLeft:
                               int.parse(_noOfTokensController.text.trim()),
