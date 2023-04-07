@@ -135,7 +135,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                           const Spacer(),
                           if (_canAuthenticate)
                             CustomButton(
-                              text: "Redeem Token",
+                              text: "Authenticate",
                               arrowColor: primaryBlack,
                               onTap: () {
                                 setState(() => isMatching = true);
@@ -238,7 +238,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
         _showFailureDialog(
           title: "No Users Registered",
           description:
-              "Make sure users are registered first before redeeming token.",
+              "Make sure users are registered first before Authenticating.",
         );
       }
     });
@@ -341,7 +341,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                   TextButton(
                     onPressed: () {
                       if (_nameController.text.trim().isEmpty) {
-                        CustomSnackBar.errorSnackBar("Enter an Id to proceed");
+                        CustomSnackBar.errorSnackBar("Enter a name to proceed");
                       } else {
                         Navigator.of(context).pop();
                         setState(() => isMatching = true);
@@ -394,7 +394,7 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
         _showFailureDialog(
           title: "User Not Found",
           description:
-              "User is not registered yet. Register first to redeem tokens.",
+              "User is not registered yet. Register first to authenticate.",
         );
       }
     });

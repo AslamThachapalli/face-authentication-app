@@ -60,8 +60,6 @@ class _RegisterFaceViewState extends State<RegisterFaceView> {
             Container(
               height: 0.82.sh,
               width: double.infinity,
-              // width 20 => 0.05.sw
-              // height 20 => 0.025.sh
               padding: EdgeInsets.fromLTRB(0.05.sw, 0.025.sh, 0.05.sw, 0.04.sh),
               decoration: BoxDecoration(
                 color: overlayContainerClr,

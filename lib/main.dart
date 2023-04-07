@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:face_auth/authenticate_face/authenticate_face_view.dart';
 import 'package:face_auth/common/views/custom_button.dart';
 import 'package:face_auth/common/utils/custom_snackbar.dart';
@@ -58,9 +56,6 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     initializeUtilContexts(context);
 
-    log("ScreenHeight: ${ScreenSizeUtil.screenHeight}");
-    log("ScreenWidth: ${ScreenSizeUtil.screenWidth}");
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -97,7 +92,7 @@ class Home extends StatelessWidget {
             ),
             SizedBox(height: 0.025.sh),
             CustomButton(
-              text: "Redeem Token",
+              text: "Authenticate User",
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
