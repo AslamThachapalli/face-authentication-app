@@ -5,13 +5,11 @@ import 'package:flutter/material.dart';
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
-  final Color? arrowColor;
 
   const CustomButton({
     Key? key,
     required this.text,
     required this.onTap,
-    this.arrowColor = buttonColor,
   }) : super(key: key);
 
   @override
@@ -22,7 +20,7 @@ class CustomButton extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 0.05.sw),
         decoration: BoxDecoration(
           color: buttonColor,
-          borderRadius: BorderRadius.circular(0.046.sh),
+          borderRadius: BorderRadius.circular(0.02.sh),
         ),
         child: Padding(
           padding: EdgeInsets.all(0.03.sw),
@@ -43,9 +41,9 @@ class CustomButton extends StatelessWidget {
               CircleAvatar(
                 radius: 0.03.sh,
                 backgroundColor: accentColor,
-                child: Icon(
-                  Icons.double_arrow_sharp,
-                  color: arrowColor,
+                child: const Icon(
+                  Icons.arrow_circle_right,
+                  color: buttonColor,
                 ),
               )
             ],

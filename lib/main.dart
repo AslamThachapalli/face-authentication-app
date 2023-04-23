@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
           ),
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),

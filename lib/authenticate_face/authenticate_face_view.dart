@@ -136,7 +136,6 @@ class _AuthenticateFaceViewState extends State<AuthenticateFaceView> {
                           if (_canAuthenticate)
                             CustomButton(
                               text: "Authenticate",
-                              arrowColor: primaryBlack,
                               onTap: () {
                                 setState(() => isMatching = true);
                                 _playScanningAudio;
